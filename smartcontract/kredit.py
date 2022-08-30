@@ -71,7 +71,7 @@ cloudCover_result = 80
 # -------------------------------------------
 
 DispatchAgreementEvent = RegisterAction('approval', 'agreement_key')
-DispatchResultNoticeEvent = RegisterAction('result-oracle', 'agreement_key', 'weather_param', 'wind_speed', 'wave_height', 'wave_period', 'cloudCover', 'oracle_cost')
+DispatchResultNoticeEvent = RegisterAction('result-oracle', 'agreement_key', 'kolektabilitas', 'jaminan', 'asuransijaminan')
 DispatchClaimEvent = RegisterAction('pay-out', 'agreement_key')
 DispatchTransferEvent = RegisterAction('transfer', 'from', 'to', 'amount')
 DispatchRefundAllEvent = RegisterAction('refund-all', 'agreement_key')
