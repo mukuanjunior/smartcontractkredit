@@ -31,7 +31,7 @@ neo> sc deploy weather-dapp/smartcontract/weather-dapp.avm True False False 0710
 neo> show contract all
 
 Using:
-neo> sc invoke 0x787177654e549a1b8bf3f6dcacbfec3b006a5286 implement ['weather',b'#\xba\'\x03\xc52\xe8\xd6\xe5"\xdc2 39\xdc\xd8\xee\xe9',1,5,10,0.1] --fee=0.1
+neo> sc invoke 0x7877654e549a1b8bf3f6dcacbfec3b006a5286 implement ['weather',b'#\xba\'\x03\xc52\xe8\xd6\xe5"\xdc2 39\xdc\xd8\xee\xe9',1,5,10,0.1] --fee=0.1
 neo> sc invoke 0x787177654e549a1b8bf3f6dcacbfec3b006a5286 approval ['ID1',b'\x01\x1c\xaau\xb1\xba\xdc\xa9\xd9\xbf&\xb3\xc4\xbc\x99A\x8f\xc6w\x89',b'#\xba\'\x03\xc52c\xe8\xd6\xe5"\xdc2 39\xdc\xd8\xee\xe9','kupang',1622525500,0,1000,10000,'weather',1] --fee=0.1
 neo> sc invoke 0x787177654e549a1b8bf3f6dcacbfec3b006a5286 resultOracle ['ID1',49,51,4,4,79,1] --fee=0.1
 neo> sc invoke 0x787177654e549a1b8bf3f6dcacbfec3b006a5286 pay-out ['ID1']
@@ -58,11 +58,9 @@ from boa.interop.Neo.Block import *
 OWNER = b'#\xba\'\x03\xc52c\xe8\xd6\xe5"\xdc2 39\xdc\xd8\xee\xe9' 
 # Script hash of the token owner
 
-weather_param_result = 50
-wind_speed_result = 50
-wave_height_result = 3
-wave_period_result = 5
-cloudCover_result = 80
+kolektabilitas_result = 1
+jaminan_result = 1
+asuransijaminan_result = 1
 
 # Threshold of weather parameters during storms on a given day
 
@@ -209,7 +207,7 @@ def Main(operation, args):
                 wave_period = args[4]
                 cloudCover = args[5]
                 oracle_cost = args[6]
-                return ResultOracle(agreement_key, weather_param, wind_speed, wave_height, wave_period, cloudCover, oracle_cost)
+                return ResultOracle(agreement_key, kolektabilitas, jaminan, asuransijaminan)
 
             else:
                 return False
@@ -502,7 +500,7 @@ def Approval(agreement_key, customer, insurer, location, timestamp, utc_offset, 
     return True
 
 
-def ResultOracle(agreement_key, weather_param, wind_speed , wave_height, wave_period, cloudCover, oracle_cost):
+def ResultOracle(agreement_key, kolektabilitas, jaminan , asuransijaminan):
     """
     Method to signal resulte by oracle
 
@@ -555,12 +553,10 @@ def ResultOracle(agreement_key, weather_param, wind_speed , wave_height, wave_pe
 
     status = 'result-noticed'
     agreement_data[11] = status
-    agreement_data[12] = weather_param
-    agreement_data[13] = wind_speed
-    agreement_data[14] = wave_height
-    agreement_data[15] = wave_period
-    agreement_data[16] = cloudCover
-    agreement_data[17] = oracle_cost
+    agreement_data[12] = kolektabilitas
+    agreement_data[13] = jaminan
+    agreement_data[14] = asuransijaminan
+    agreement_data[15] = oracle_cost
 
     # Get timestamp of current block
     currentHeight = GetHeight()
@@ -579,7 +575,7 @@ def ResultOracle(agreement_key, weather_param, wind_speed , wave_height, wave_pe
         Log("Datetime of result notice is lower than agreed datetime")
         return False
     else:
-        DispatchResultNoticeEvent(agreement_key, weather_param, wind_speed , wave_height, wave_period, cloudCover, oracle_cost)
+        DispatchResultNoticeEvent(agreement_key, kolektabilitas, jaminan , asuransijaminan)
         return True
 
 
@@ -605,12 +601,10 @@ def PayOut(agreement_key):
     amount = agreement_data[5]
     premium = agreement_data[6]
     fee = agreement_data[7]
-    weather_param = agreement_data[12]
-    wind_speed = agreement_data[13]
-    wave_height = agreement_data[14]
-    wave_period = agreement_data[15]
-    cloudCover = agreement_data[16]
-    oracle_cost = agreement_data[17]
+    kolektabilitas = agreement_data[12]
+    jaminan = agreement_data[13]
+    asuransijaminan = agreement_data[14]
+    oracle_cost = agreement_data[15]
     
     oracle = Get(context, 'oracle')
 
@@ -645,7 +639,7 @@ def PayOut(agreement_key):
 
     net_premium = premium - fee
 
-    if weather_param >= weather_param_result or wind_speed <= wind_speed_result or wave_height <= wave_height_result or wave_period >= wave_period_result or cloudCover <= cloudCover_result:
+    if kolektabilitas = kolektabilitas_result or jaminan = jaminan_result or asuransijaminan = asuransijaminan_result:
         Notify("No pay out to customer")
         DoTransfer(OWNER, insurer, net_premium)
         DispatchTransferEvent(OWNER, insurer, net_premium)
