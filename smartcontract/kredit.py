@@ -23,7 +23,7 @@ neo> sc build_run weather-dapp/smartcontract/weather-dapp.py True False False 07
 neo> sc build_run weather-dapp/smartcontract/weather-dapp.py True False False 0710 05 resultOracle ['ID1',49,51,4,4,79,1]
 neo> sc build_run weather-dapp/smartcontract/weather-dapp.py True False False 0710 05 pay-out ['ID1']
 neo> sc build_run weather-dapp/smartcontract/weather-dapp.py True False False 0710 05 transfer [b'#\xba\'\x03\xc52c\xe8\xd6\xe5"\xdc2 39\xdc\xd8\xee\xe9',b'#\xba\'\x03\xc52\xe8\xd6\xe5"\xdc2 39\xdc\xd8\xee\xe9',100]
-neo> sc build_run weather-dapp/smartcontract/weather-dapp.py True False False 0710 05 refund ['ID1'] 
+neo> sc build_run weather-dapp/smartcontract/weather-dapp.py True False False 0710 05 refund ['ID1']
 neo> sc build_run weather-dapp/smartcontract/weather-dapp.py True False False 0710 05 deleteApproval ['ID1']
 
 Importing:
@@ -36,8 +36,8 @@ neo> sc invoke 0x787177654e549a1b8bf3f6dcacbfec3b006a5286 approval ['ID1',b'\x01
 neo> sc invoke 0x787177654e549a1b8bf3f6dcacbfec3b006a5286 resultOracle ['ID1',49,51,4,4,79,1] --fee=0.1
 neo> sc invoke 0x787177654e549a1b8bf3f6dcacbfec3b006a5286 pay-out ['ID1']
 neo> sc invoke 0x787177654e549a1b8bf3f6dcacbfec3b006a5286 transfer [b'#\xba\'\x03\xc52c\xe8\xd6\xe5"\xdc2 39\xdc\xd8\xee\xe9',b'#\xba\'\x03\xc52\xe8\xd6\xe5"\xdc2 39\xdc\xd8\xee\xe9',100] --fee=0.1
-neo> sc invoke 0x787177654e549a1b8bf3f6dcacbfec3b006a5286 refund ['ID1'] 
-neo> sc invoke 0x787177654e549a1b8bf3f6dcacbfec3b006a5286 deleteApproval ['ID1'] 
+neo> sc invoke 0x787177654e549a1b8bf3f6dcacbfec3b006a5286 refund ['ID1']
+neo> sc invoke 0x787177654e549a1b8bf3f6dcacbfec3b006a5286 deleteApproval ['ID1']
 """
 
 from boa.interop.Neo.Runtime import CheckWitness, Deserialize, GetTime, GetTrigger, Serialize
@@ -55,7 +55,7 @@ from boa.interop.Neo.Block import *
 # DAPP SETTINGS
 # -------------------------------------------
 
-OWNER = b'#\xba\'\x03\xc52c\xe8\xd6\xe5"\xdc2 39\xdc\xd8\xee\xe9' 
+OWNER = b'#\xba\'\x03\xc52c\xe8\xd6\xe5"\xdc2 39\xdc\xd8\xee\xe9'
 # Script hash of the token owner
 
 kolektabilitas_result = 1
@@ -201,11 +201,9 @@ def Main(operation, args):
         elif operation == 'resultOracle':
             if len(args) == 7:
                 agreement_key = args[0]
-                weather_param = args[1]
-                wind_speed = args[2]
-                wave_height = args[3]
-                wave_period = args[4]
-                cloudCover = args[5]
+                kolektabilitas = args[1]
+                jaminan = args[2]
+                asuransijaminan = args[3]
                 oracle_cost = args[6]
                 return ResultOracle(agreement_key, kolektabilitas, jaminan, asuransijaminan)
 
@@ -295,13 +293,13 @@ def Implement(dapp_name, oracle, time_margin, min_time, max_time):
         return False
 
     Put(context, 'min_time', min_time)
-    
+
     maxtime = max_time * 3600 * 24
     if max_time <= (min_time + time_margin):
         Log("max_time must be greather than min_time + time_margin")
         return False
-    
-    max_time = maxtime 
+
+    max_time = maxtime
     Put(context, 'max_time', max_time)
 
     return True
@@ -488,7 +486,7 @@ def Approval(agreement_key, customer, insurer, location, timestamp, utc_offset, 
     cloudCover = 0
     oracle_cost = 0
 
-    
+
     stuff = [customer, insurer, location, timestamp, utc_offset, amount, premium, fee, time_margin, min_time, max_time, status, weather_param, wind_speed , wave_height, wave_period, cloudCover, oracle_cost]
 
     agreement_data = Serialize(stuff)
@@ -535,7 +533,7 @@ def ResultOracle(agreement_key, kolektabilitas, jaminan , asuransijaminan):
     if agreement_data == '':
         Log("Agreement_key is deleted")
         return False
-    
+
     oracle = Get(context, 'oracle')
     print (oracle)
 
@@ -594,7 +592,7 @@ def PayOut(agreement_key):
     if agreement_data == '':
         Log("Agreement_key is deleted")
         return False
-    
+
     customer = agreement_data[0]
     insurer = agreement_data[1]
     status = agreement_data[11]
@@ -605,7 +603,7 @@ def PayOut(agreement_key):
     jaminan = agreement_data[13]
     asuransijaminan = agreement_data[14]
     oracle_cost = agreement_data[15]
-    
+
     oracle = Get(context, 'oracle')
 
     # Check if the pay out is triggered by the owner, customer, or insurer.
@@ -639,7 +637,7 @@ def PayOut(agreement_key):
 
     net_premium = premium - fee
 
-    if kolektabilitas = kolektabilitas_result or jaminan = jaminan_result or asuransijaminan = asuransijaminan_result:
+    if kolektabilitas =< kolektabilitas_result or jaminan =< jaminan_result or asuransijaminan =< asuransijaminan_result:
         Notify("No pay out to customer")
         DoTransfer(OWNER, insurer, net_premium)
         DispatchTransferEvent(OWNER, insurer, net_premium)
@@ -741,13 +739,13 @@ def Refund(agreement_key):
     if not CheckWitness(OWNER):
         Log("Must be owner to do a refund to all")
         return False
-    
+
     context = GetContext()
     agreement_data = getDataByNumber(agreement_key)
     if agreement_data == '':
         Log("Agreement_key is deleted")
         return False
-    
+
     customer = agreement_data[0]
     insurer = agreement_data[1]
     status = agreement_data[11]
@@ -793,13 +791,13 @@ def DeleteApproval(agreement_key):
     if not CheckWitness(OWNER):
         Log("Must be owner to delete an agreement")
         return False
-    
+
     context = GetContext()
     agreement_data = getDataByNumber(agreement_key)
     if agreement_data == '':
         Log("Agreement_key is deleted")
         return False
-    
+
     status = agreement_data[11]
 
     if status == 'claimed':
