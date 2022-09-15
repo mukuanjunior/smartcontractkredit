@@ -596,7 +596,7 @@ def PayOut(agreement_key):
 
     net_premium = premium - fee
 
-    if kolektabilitas =< kolektabilitas_result or jaminan =< jaminan_result or asuransijaminan =< asuransijaminan_result:
+    if kolektabilitas <= kolektabilitas_result or jaminan <= jaminan_result or asuransijaminan <= asuransijaminan_result:
         Notify("No pay out to customer")
         DoTransfer(OWNER, insurer, net_premium)
         DispatchTransferEvent(OWNER, insurer, net_premium)
